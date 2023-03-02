@@ -1,0 +1,18 @@
+include MANIFEST.in
+include requirements.txt
+include *.json
+include *.md
+include *.py
+include *.txt
+recursive-include trial_balance_by_multi_account *.css
+recursive-include trial_balance_by_multi_account *.csv
+recursive-include trial_balance_by_multi_account *.html
+recursive-include trial_balance_by_multi_account *.ico
+recursive-include trial_balance_by_multi_account *.js
+recursive-include trial_balance_by_multi_account *.json
+recursive-include trial_balance_by_multi_account *.md
+recursive-include trial_balance_by_multi_account *.png
+recursive-include trial_balance_by_multi_account *.py
+recursive-include trial_balance_by_multi_account *.svg
+recursive-include trial_balance_by_multi_account *.txt
+recursive-exclude trial_balance_by_multi_account *.pyc
