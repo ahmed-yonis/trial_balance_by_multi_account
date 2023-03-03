@@ -77,21 +77,10 @@ def validate_filters(filters):
 
 
 def get_data(filters):
-	conditions = []
-
-	if filters.get("account"):
-		filters.account = get_accounts_with_children(filters.account)
-		conditions.append("name in %(account)s")
-	
-	conditions="and {}".format(" and ".join(conditions)) if conditions else ""
-
 	accounts = frappe.db.sql(
 		"""select name, account_number, parent_account, account_name, root_type, report_type, lft, rgt
-		from `tabAccount` where company=%(company)s {conditions} 
-		order by lft""".format(
-			conditions=conditions
-		),
-		filters,
+		from `tabAccount` where company=%s order by lft""",
+		filters.company,
 		as_dict=True,
 	)
 	company_currency = filters.presentation_currency or erpnext.get_company_currency(filters.company)
@@ -135,8 +124,23 @@ def get_data(filters):
 	data = filter_out_zero_value_rows(
 		data, parent_children_map, show_zero_values=filters.get("show_zero_values")
 	)
+	final_data = get_filtered_accounts(filters, data)
 
-	return data
+	return final_data
+
+def get_filtered_accounts(filters, data):
+	final_data = []
+
+	if filters.get("account"):
+		filters.account = get_accounts_with_children(filters.account)
+		for d in data:
+			if d:
+				if d['account'] in filters.account:
+					final_data.append(d)
+	else:
+		final_data = data
+	
+	return final_data
 
 
 def get_opening_balances(filters):
@@ -165,10 +169,6 @@ def get_rootwise_opening_balances(filters, report_type):
 			rgt,
 		)
 
-	if filters.get("account"):
-		filters.account = get_accounts_with_children(filters.account)
-		additional_conditions += "and account in %(account)s"	
-
 	if filters.project:
 		additional_conditions += " and project = %(project)s"
 
@@ -185,7 +185,6 @@ def get_rootwise_opening_balances(filters, report_type):
 		"company": filters.company,
 		"from_date": filters.from_date,
 		"to_date": filters.to_date,
-		"account": filters.account,
 		"report_type": report_type,
 		"year_start_date": filters.year_start_date,
 		"project": filters.project,
